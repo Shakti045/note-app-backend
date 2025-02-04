@@ -1,6 +1,6 @@
 import Media from "../model/media.js";
 import Note from "../model/note.js";
-import { addNoteToElasticsearch } from "../utils/elastic.js";
+import { addNoteToElasticsearch, deleteNoteFromElastic, updateNoteFromElastic } from "../utils/elastic.js";
 import { uploadfile } from "../utils/file.js";
 
 
@@ -94,7 +94,7 @@ export const updateNote = async(req,res) =>{
             description:description!=null?description:note.description,
             createdfrom:type!=null?type:note.createdfrom
         },{new:true})
-
+        await updateNoteFromElastic(noteId,updateNote.title,updateNote.description);
         return res.status(200).json({
             success:true,
             message:"Note updated",
@@ -127,6 +127,7 @@ export const deleteNote = async(req,res) =>{
         }
         await Media.deleteMany({_id:{$in:note.images}});
         await Note.findByIdAndDelete(noteId);
+        await deleteNoteFromElastic(noteId);
         return res.status(200).json({
             success:true,
             message:"Note deleted"

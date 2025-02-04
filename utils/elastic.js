@@ -81,4 +81,33 @@ export const searchNotesByUserAndText = async(userId, query)=> {
     }
 }
 
+export const  updateNoteFromElastic = async(noteId, newTitle,newContent) =>{
+  try {
+    await client.update({
+      index: 'notes',
+      id: noteId,
+      body: {
+        doc: {
+          title: newTitle, 
+          content:newContent,
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error updating note:", error);
+  }
+}
+
+
+export const deleteNoteFromElastic = async(noteId) =>{
+  try {
+    await client.delete({
+      index: 'notes',
+      id: noteId
+    });
+  } catch (error) {
+    console.error("Error deleting note:", error);
+  }
+}
+
 export default createNotesIndex;
