@@ -7,17 +7,41 @@ async function createNotesIndex() {
         console.log("Elastic search is ready")
         const indexExists = await client.indices.exists({ index: 'notes' });
     if (!indexExists) {
+
       await client.indices.create({
         index: 'notes',
         body: {
+          settings: {
+            analysis: {
+              filter: {
+                lowercase_filter: {
+                  type: 'lowercase'
+                }
+              },
+              analyzer: {
+                edge_ngram_analyzer: {
+                  tokenizer: 'edge_ngram_tokenizer',
+                  filter: ['lowercase_filter']
+                }
+              },
+              tokenizer: {
+                edge_ngram_tokenizer: {
+                  type: 'edge_ngram',
+                  min_gram: 2,
+                  max_gram: 10,
+                  token_chars: ['letter', 'digit']
+                }
+              }
+            }
+          },
           mappings: {
             properties: {
               userId: { type: 'keyword' },
-              title: { type: 'text' }, 
-              content: { type: 'text' }, 
-            },
-          },
-        },
+              title: { type: 'text', analyzer: 'edge_ngram_analyzer' }, 
+              content: { type: 'text', index: false, store: true } 
+            }
+          }
+        }
       });
       console.log("Notes index created");
     } else {
@@ -58,8 +82,8 @@ export const searchNotesByUserAndText = async(userId, query)=> {
           query: {
             bool: {
               must: [
-                { match: { title: query } },    
-                { match: { content: query } }, 
+                { match: { title: query.toLowerCase() } },    
+                // { match: { content: query } }, 
               ],
               filter:[
                 {term:{userId:userId}}

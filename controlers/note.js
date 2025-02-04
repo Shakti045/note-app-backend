@@ -94,7 +94,7 @@ export const updateNote = async(req,res) =>{
             description:description!=null?description:note.description,
             createdfrom:type!=null?type:note.createdfrom
         },{new:true})
-        await updateNoteFromElastic(noteId,updateNote.title,updateNote.description);
+        await updateNoteFromElastic(noteId,updatednote.title,updatednote.description);
         return res.status(200).json({
             success:true,
             message:"Note updated",
