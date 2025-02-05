@@ -1,5 +1,6 @@
 import Media from "../model/media.js";
 import Note from "../model/note.js";
+import User from "../model/user.js";
 import { addNoteToElasticsearch, deleteNoteFromElastic, updateNoteFromElastic } from "../utils/elastic.js";
 import { uploadfile } from "../utils/file.js";
 
@@ -15,6 +16,7 @@ export const createNote = async(req,res) =>{
             })
         }
         const note  = await Note.create({createdBy:userId,title:title,description:description,createdfrom:type});
+        await User.findByIdAndUpdate(userId,{$push:{notes:note._id}});
         await addNoteToElasticsearch(note);
         return res.status(200).json({
             success:true,
