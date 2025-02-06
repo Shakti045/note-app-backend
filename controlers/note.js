@@ -8,14 +8,16 @@ import { uploadfile } from "../utils/file.js";
 
 export const createNote = async(req,res) =>{
     try {
-        const {userId,title,description,type} = req.body;
+        let {userId,title,description,type} = req.body;
         if(!userId || !title || !description){
             return res.status(404).json({
                 success:false,
                 message:"Invalid request"
             })
         }
-        const note  = await Note.create({createdBy:userId,title:title,description:description,createdfrom:type});
+        title = title.charAt(0).toUpperCase() + title.slice(1);
+        description = description.charAt(0).toUpperCase() + description.slice(1);
+        const note  = await Note.create({createdBy:userId,title:title,description:description,createdfrom:type,createdat:Date.now()});
         await User.findByIdAndUpdate(userId,{$push:{notes:note._id}});
         await addNoteToElasticsearch(note);
         return res.status(200).json({
